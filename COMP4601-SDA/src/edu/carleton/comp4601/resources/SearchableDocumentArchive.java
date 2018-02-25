@@ -13,6 +13,8 @@ import javax.ws.rs.core.UriInfo;
 
 
 
+
+
 @Path("/sda")
 public class SearchableDocumentArchive {
 		// Allows to insert contextual objects into the class,
@@ -52,4 +54,35 @@ public class SearchableDocumentArchive {
 		public String sayJSON() {
 			return "{" + name + "}";
 		}
+		
+		//Creates document
+		@POST
+		@Produces(MediaType.TEXT_HTML)
+		@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+		public void newDocument(@FormParam("name") String name,
+				@FormParam("id") String id,
+				@FormParam("text") String text,
+				@FormParam("tags") ArrayList<String> tags,
+				@FormParam("links") ArrayList<String> links,
+				@Context HttpServletResponse servletResponse) throws IOException {
+
+			String newName = name;
+			if (newName == null)
+				newName = "";
+
+			Integer newId = new Integer(id);
+			String newText = text;
+			if(newText == null)
+				newName = "";
+			ArrayList<String> newTags = tags;
+			ArrayList<String> newLinks = links; 
+			//Accounts.getInstance().open(newId, newBalance, newDescription);
+
+			servletResponse.setStatus(200);
+		}
+		
+		
+		//Get specific document
+		
+		
 }
