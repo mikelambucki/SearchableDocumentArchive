@@ -1,23 +1,21 @@
 package edu.carleton.comp4601.resources;
 
-import java.util.List;
+import java.io.IOException;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 
 import edu.carleton.comp4601.dao.Document;
-import edu.carleton.comp4601.dao.DocumentCollection;
+import edu.carleton.comp4601.dao.Documents;
 
 public class Action {
 	@Context
@@ -25,30 +23,50 @@ public class Action {
 	@Context
 	Request request;
 
-	String id;
+	Integer id;
+	
+	Documents documents;
 
-	public Action(UriInfo uriInfo, Request request, String id) {
+	public Action(UriInfo uriInfo, Request request, Integer id) {
 		this.uriInfo = uriInfo;
 		this.request = request;
 		this.id = id;
+		
+		documents = Documents.getInstance();
 	}
 
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
-	public Document getDocumentHTML() {
-		DocumentCollection dc = new DocumentCollection();
-		List<Document> dl = dc.getDocuments();
+	public Document getDocumentXML() {
+		Document doc = documents.get(id);
 		
-		for(Document d: dl){
-			if(d.getId() == new Integer(id)){
-				return d;
-			}
+		if(doc != null){
+			return doc;
 		}
 		
-		throw new RuntimeException("No such doc with id:" + id);	
+		throw new RuntimeException("No such doc with id:" + id);
 	}
 
+	@POST
+	//@Produces(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.APPLICATION_XML)
+	public String updateUser(JAXBElement<Document> d, @Context HttpServletResponse servletResponse)
+			throws IOException {
+		Document doc = d.getValue();
+		if (documents.update(id, doc)) {
+			servletResponse.setStatus(200);
+			return "UPDATED DOCUMENT";
+		}
+		
+		throw new RuntimeException("No such doc with id:" + id);
+	}
 	
-
+	@DELETE
+	public String deleteDocument(@Context HttpServletResponse servletResponse) {
+		if (!Documents.getInstance().remove(id))
+			throw new RuntimeException("Account " + id + " not found");
+		servletResponse.setStatus(200);
+		return "REMOVED DOCUMENT";
+	}
 	
 }
